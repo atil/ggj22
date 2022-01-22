@@ -286,17 +286,21 @@ namespace Game
                 });
 
             // Move token itself
-            _isTokenMoving = true;
-            Curve.Tween(AnimationCurve.EaseInOut(0, 0, 1, 1), 1,
-                t =>
-                {
-                    clickedTokenView.transform.position = Vector3.Lerp(tokenStart, tokenEnd, t);
-                },
-                () =>
-                {
-                    _isTokenMoving = false;
-                    clickedTokenView.transform.position = tokenEnd;
-                });
+
+            CoroutineStarter.RunDelayed(0.3f, () =>
+            {
+                _isTokenMoving = true;
+                Curve.Tween(AnimationCurve.EaseInOut(0, 0, 1, 1), 1,
+                    t =>
+                    {
+                        clickedTokenView.transform.position = Vector3.Lerp(tokenStart, tokenEnd, t);
+                    },
+                    () =>
+                    {
+                        _isTokenMoving = false;
+                        clickedTokenView.transform.position = tokenEnd;
+                    });
+            });
         }
 
         public void OnRestartClicked()
