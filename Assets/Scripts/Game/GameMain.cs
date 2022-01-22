@@ -98,8 +98,10 @@ namespace Game
 
         private void Start()
         {
-            Debug.Assert(_testLevel.width == _testLevel.height);
+            Debug.Assert(_testLevel.width == _testLevel.height, "Level texture should be square");
             _gridSize = _testLevel.width;
+
+            Camera.main.transform.position = new Vector3(_gridSize, _gridSize, -1);
 
             _cells = new Cell[_gridSize][];
             for (int i = 0; i < _gridSize; i++)
@@ -150,8 +152,6 @@ namespace Game
 
         private void OnTokenClicked(Token clickedToken)
         {
-            Cell cellUnderToken = CellAt(clickedToken.Pos);
-
             Vector2Int dir = GetWalkDir(clickedToken);
             if (dir == Vector2Int.zero)
             {
