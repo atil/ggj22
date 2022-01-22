@@ -20,13 +20,13 @@ namespace Game
             switch (type)
             {
                 case CellType.White:
-                    ColorUtility.TryParseHtmlString("#C9C9C7", out Color c);
+                    ColorUtility.TryParseHtmlString("#f8f9fa", out Color c);
                     return c;
                 case CellType.Black:
-                    ColorUtility.TryParseHtmlString("#000000", out c);
+                    ColorUtility.TryParseHtmlString("#212529", out c);
                     return c;
                 case CellType.Wall:
-                    ColorUtility.TryParseHtmlString("#829191", out c);
+                    ColorUtility.TryParseHtmlString("#495057", out c);
                     return c;
             }
 
@@ -103,7 +103,7 @@ namespace Game
             Debug.Assert(_testLevel.width == _testLevel.height, "Level texture should be square");
             _gridSize = _testLevel.width;
 
-            Camera.main.transform.position = new Vector3(_gridSize, _gridSize, -1);
+            Camera.main.transform.position = new Vector3(_gridSize / 2f, _gridSize / 2f, -1);
 
             _cells = new Cell[_gridSize][];
             for (int i = 0; i < _gridSize; i++)
@@ -284,10 +284,9 @@ namespace Game
                 });
 
             // Move token itself
-
+            _isTokenMoving = true;
             CoroutineStarter.RunDelayed(_movementStartDelay, () =>
             {
-                _isTokenMoving = true;
                 Curve.Tween(AnimationCurve.EaseInOut(0, 0, 1, 1), movementLength * _movementDurationPerCell,
                     t =>
                     {
