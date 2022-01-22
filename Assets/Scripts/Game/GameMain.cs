@@ -95,6 +95,8 @@ namespace Game
         private readonly Dictionary<Token, GameObject> _tokenViews = new Dictionary<Token, GameObject>();
 
         private bool _isTokenMoving = false;
+        private float _movementDurationPerCell = 0.25f;
+        private float _movementStartDelay = 0.3f;
 
         private void Start()
         {
@@ -179,22 +181,22 @@ namespace Game
             clickedToken.Pos = tokenTarget;
 
             // Invert cells
-            foreach (Cell cell in cellsToInvert)
+            for (int i = 0; i < cellsToInvert.Count; i++)
             {
-                if (cell.Type == CellType.White)
+                if (cellsToInvert[i].Type == CellType.White)
                 {
-                    ConvertCellView(cell, CellType.White, CellType.Black);
-                    cell.Type = CellType.Black;
+                    ConvertCellView(cellsToInvert[i], CellType.White, CellType.Black, i);
+                    cellsToInvert[i].Type = CellType.Black;
                 }
-                else if (cell.Type == CellType.Black)
+                else if (cellsToInvert[i].Type == CellType.Black)
                 {
-                    ConvertCellView(cell, CellType.Black, CellType.White);
-                    cell.Type = CellType.White;
+                    ConvertCellView(cellsToInvert[i], CellType.Black, CellType.White, i);
+                    cellsToInvert[i].Type = CellType.White;
                 }
                 else Debug.LogError("Walls shouldn't come here");
             }
 
-            MoveTokenView(clickedToken, tokenTarget);
+            MoveTokenView(clickedToken, tokenTarget, cellsToInvert.Count);
         }
 
         private Vector2Int GetWalkDir(Token token)
@@ -214,22 +216,18 @@ namespace Game
             return Vector2Int.zero;
         }
 
-        private void ConvertCellView(Cell cell, CellType from, CellType to)
+        private void ConvertCellView(Cell cell, CellType from, CellType to, int index)
         {
             Color fromColor = from.ToColor();
             Color toColor = to.ToColor();
             SpriteRenderer sr = _cellViews[cell].GetComponent<SpriteRenderer>();
 
-            Curve.Tween(AnimationCurve.EaseInOut(0, 0, 1, 1), 0.5f,
-                t =>
-                {
-                    sr.color = Color.Lerp(fromColor, toColor, t);
-                },
-                () =>
-                {
-                    sr.color = toColor;
-                });
-
+            CoroutineStarter.RunDelayed(_movementStartDelay + index * _movementDurationPerCell, () =>
+            {
+                Curve.Tween(AnimationCurve.EaseInOut(0, 0, 1, 1), _movementDurationPerCell,
+                    t => { sr.color = Color.Lerp(fromColor, toColor, t); },
+                    () => { sr.color = toColor; });
+            });
         }
 
         private Cell CellAt(Vector2Int pos)
@@ -264,7 +262,7 @@ namespace Game
             return true;
         }
 
-        private void MoveTokenView(Token clickedToken, Vector2Int tokenTarget)
+        private void MoveTokenView(Token clickedToken, Vector2Int tokenTarget, int movementLength)
         {
             GameObject clickedTokenView = _tokenViews[clickedToken];
             Vector3 tokenStart = clickedTokenView.transform.position;
@@ -287,10 +285,10 @@ namespace Game
 
             // Move token itself
 
-            CoroutineStarter.RunDelayed(0.3f, () =>
+            CoroutineStarter.RunDelayed(_movementStartDelay, () =>
             {
                 _isTokenMoving = true;
-                Curve.Tween(AnimationCurve.EaseInOut(0, 0, 1, 1), 1,
+                Curve.Tween(AnimationCurve.EaseInOut(0, 0, 1, 1), movementLength * _movementDurationPerCell,
                     t =>
                     {
                         clickedTokenView.transform.position = Vector3.Lerp(tokenStart, tokenEnd, t);
