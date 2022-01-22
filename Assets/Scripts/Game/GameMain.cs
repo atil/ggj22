@@ -86,7 +86,7 @@ namespace Game
         [SerializeField] private GameObject _tokenPrefab;
         [SerializeField] private Texture2D _testLevel;
 
-        private int _gridSize = 3;
+        private int _gridSize;
         private Cell[][] _cells;
         private readonly Dictionary<Cell, GameObject> _cellViews = new Dictionary<Cell, GameObject>();
 
@@ -193,22 +193,7 @@ namespace Game
                 else Debug.LogError("Walls shouldn't come here");
             }
 
-            // Token move view
-            GameObject clickedTokenView = _tokenViews[clickedToken];
-            Vector3 tokenStart = clickedTokenView.transform.position;
-            Vector3 tokenEnd = tokenTarget.WorldPos();
-
-            _isTokenMoving = true;
-            Curve.Tween(AnimationCurve.EaseInOut(0, 0, 1, 1), 1,
-                t =>
-                {
-                    clickedTokenView.transform.position = Vector3.Lerp(tokenStart, tokenEnd, t);
-                },
-                () =>
-                {
-                    _isTokenMoving = false;
-                    clickedTokenView.transform.position = tokenEnd;
-                });
+            MoveTokenView(clickedToken, tokenTarget);
         }
 
         private Vector2Int GetWalkDir(Token token)
@@ -276,6 +261,41 @@ namespace Game
             }
 
             return true;
+        }
+
+        private void MoveTokenView(Token clickedToken, Vector2Int tokenTarget)
+        {
+            GameObject clickedTokenView = _tokenViews[clickedToken];
+            Vector3 tokenStart = clickedTokenView.transform.position;
+            Vector3 tokenEnd = tokenTarget.WorldPos();
+
+            // Rotate arrow
+            Vector2Int facing = clickedToken.Facing;
+            Transform arrowTransform = clickedTokenView.transform.Find("Arrow");
+            Vector3 srcUp = arrowTransform.up;
+            Vector3 targetUp = new Vector3(facing.x, facing.y, 0);
+            Curve.Tween(AnimationCurve.EaseInOut(0, 0, 1, 1), 0.2f,
+                t =>
+                {
+                    arrowTransform.up = Vector3.Lerp(srcUp, targetUp, t);
+                },
+                () =>
+                {
+                    arrowTransform.up = targetUp;
+                });
+
+            // Move token itself
+            _isTokenMoving = true;
+            Curve.Tween(AnimationCurve.EaseInOut(0, 0, 1, 1), 1,
+                t =>
+                {
+                    clickedTokenView.transform.position = Vector3.Lerp(tokenStart, tokenEnd, t);
+                },
+                () =>
+                {
+                    _isTokenMoving = false;
+                    clickedTokenView.transform.position = tokenEnd;
+                });
         }
 
     }
