@@ -1,8 +1,282 @@
-﻿using UnityEngine;
+﻿using JamKit;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
 
 namespace Game
 {
+    public static class GGJ21Extensions
+    {
+        public static Vector3 WorldPos(this Vector2Int v)
+        {
+            return new Vector3(v.x + 0.5f, v.y + 0.5f, 0);
+        }
+
+        public static Color ToColor(this CellType type)
+        {
+            switch (type)
+            {
+                case CellType.White:
+                    ColorUtility.TryParseHtmlString("#C9C9C7", out Color c);
+                    return c;
+                case CellType.Black:
+                    ColorUtility.TryParseHtmlString("#000000", out c);
+                    return c;
+                case CellType.Wall:
+                    ColorUtility.TryParseHtmlString("#829191", out c);
+                    return c;
+            }
+
+            return Color.magenta;
+        }
+
+        public static Vector2Int RotateCW(this Vector2Int v)
+        {
+            Vector2 rotated = Quaternion.AngleAxis(-90f, Vector3.forward) * (Vector2)v;
+            return new Vector2Int(Mathf.RoundToInt(rotated.x), Mathf.RoundToInt(rotated.y));
+
+        }
+
+        public static CellType ToCellType(this Color c)
+        {
+            if (c == Color.white)
+            {
+                return CellType.White;
+            }
+            if (c == Color.black)
+            {
+                return CellType.Black;
+            }
+            if (c == Color.red)
+            {
+                return CellType.Wall;
+            }
+            if (c == Color.green)
+            {
+                return CellType.White;
+            }
+
+            throw new Exception($"Shouldn't be the case: {c}");
+        }
+    }
+
+    public enum CellType
+    {
+        White, Black, Wall
+    }
+
+    public class Cell
+    {
+        public Vector2Int Pos;
+        public CellType Type;
+    }
+
+    public class Token
+    {
+        public Vector2Int Pos;
+        public Vector2Int Facing;
+    }
+
     public class GameMain : MonoBehaviour
     {
+        [SerializeField] private GameObject _cellPrefab;
+        [SerializeField] private Transform _cellsParent;
+        [SerializeField] private GameObject _tokenPrefab;
+        [SerializeField] private Texture2D _testLevel;
+
+        private int _gridSize = 3;
+        private Cell[][] _cells;
+        private readonly Dictionary<Cell, GameObject> _cellViews = new Dictionary<Cell, GameObject>();
+
+        private readonly List<Token> _tokens = new List<Token>();
+        private readonly Dictionary<Token, GameObject> _tokenViews = new Dictionary<Token, GameObject>();
+
+        private bool _isTokenMoving = false;
+
+        private void Start()
+        {
+            Debug.Assert(_testLevel.width == _testLevel.height);
+            _gridSize = _testLevel.width;
+
+            _cells = new Cell[_gridSize][];
+            for (int i = 0; i < _gridSize; i++)
+            {
+                _cells[i] = new Cell[_gridSize];
+                for (int j = 0; j < _gridSize; j++)
+                {
+                    Vector2Int pos = new Vector2Int(i, j);
+
+                    Color texPixel = _testLevel.GetPixel(i, j);
+                    if (texPixel == Color.green)
+                    {
+                        Token tempToken = new Token() { Pos = pos, Facing = Vector2Int.up };
+                        _tokens.Add(tempToken);
+                        _tokenViews.Add(tempToken, Instantiate(_tokenPrefab, pos.WorldPos(), Quaternion.identity));
+                    }
+
+                    CellType type = texPixel.ToCellType();
+
+                    Cell cell = new Cell() { Pos = pos, Type = type };
+                    _cells[i][j] = cell;
+
+                    GameObject go = Instantiate(_cellPrefab, pos.WorldPos(), Quaternion.identity);
+                    go.transform.SetParent(_cellsParent);
+                    go.GetComponent<SpriteRenderer>().color = type.ToColor();
+
+                    _cellViews.Add(cell, go);
+                }
+            }
+        }
+
+        private void Update()
+        {
+            if (Input.GetMouseButtonDown(0) && !_isTokenMoving)
+            {
+                if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out RaycastHit hit))
+                {
+                    foreach (var pair in _tokenViews)
+                    {
+                        if (pair.Value == hit.transform.gameObject)
+                        {
+                            OnTokenClicked(pair.Key);
+                        }
+                    }
+                }
+            }
+        }
+
+        private void OnTokenClicked(Token clickedToken)
+        {
+            Cell cellUnderToken = CellAt(clickedToken.Pos);
+
+            Vector2Int dir = GetWalkDir(clickedToken);
+            if (dir == Vector2Int.zero)
+            {
+                return;
+            }
+            clickedToken.Facing = dir;
+
+            Vector2Int tokenTarget = clickedToken.Pos + dir;
+            List<Cell> cellsToInvert = new List<Cell>();
+            while (true)
+            {
+                Cell possibleTarget = CellAt(tokenTarget);
+                if (IsPosWalkable(tokenTarget))
+                {
+                    cellsToInvert.Add(possibleTarget);
+                    tokenTarget += dir;
+                }
+                else
+                {
+                    tokenTarget -= dir;
+                    break;
+                }
+            }
+
+            clickedToken.Pos = tokenTarget;
+
+            // Invert cells
+            foreach (Cell cell in cellsToInvert)
+            {
+                if (cell.Type == CellType.White)
+                {
+                    ConvertCellView(cell, CellType.White, CellType.Black);
+                    cell.Type = CellType.Black;
+                }
+                else if (cell.Type == CellType.Black)
+                {
+                    ConvertCellView(cell, CellType.Black, CellType.White);
+                    cell.Type = CellType.White;
+                }
+                else Debug.LogError("Walls shouldn't come here");
+            }
+
+            // Token move view
+            GameObject clickedTokenView = _tokenViews[clickedToken];
+            Vector3 tokenStart = clickedTokenView.transform.position;
+            Vector3 tokenEnd = tokenTarget.WorldPos();
+
+            _isTokenMoving = true;
+            Curve.Tween(AnimationCurve.EaseInOut(0, 0, 1, 1), 1,
+                t =>
+                {
+                    clickedTokenView.transform.position = Vector3.Lerp(tokenStart, tokenEnd, t);
+                },
+                () =>
+                {
+                    _isTokenMoving = false;
+                    clickedTokenView.transform.position = tokenEnd;
+                });
+        }
+
+        private Vector2Int GetWalkDir(Token token)
+        {
+            Vector2Int dir = token.Facing;
+
+            for (int i = 0; i < 4; i++)
+            {
+                if (IsPosWalkable(token.Pos + dir))
+                {
+                    return dir;
+                }
+
+                dir = dir.RotateCW();
+            }
+
+            return Vector2Int.zero;
+        }
+
+        private void ConvertCellView(Cell cell, CellType from, CellType to)
+        {
+            Color fromColor = from.ToColor();
+            Color toColor = to.ToColor();
+            SpriteRenderer sr = _cellViews[cell].GetComponent<SpriteRenderer>();
+
+            Curve.Tween(AnimationCurve.EaseInOut(0, 0, 1, 1), 0.5f,
+                t =>
+                {
+                    sr.color = Color.Lerp(fromColor, toColor, t);
+                },
+                () =>
+                {
+                    sr.color = toColor;
+                });
+
+        }
+
+        private Cell CellAt(Vector2Int pos)
+        {
+            if (pos.x < 0 || pos.x >= _gridSize ||
+                pos.y < 0 || pos.y >= _gridSize)
+            {
+                return null;
+            }
+
+            return _cells[pos.x][pos.y];
+        }
+
+        private bool IsPosWalkable(Vector2Int pos)
+        {
+            Cell cell = CellAt(pos);
+            if (cell == null)
+            {
+                return false; // outside of map
+            }
+
+            if (cell.Type == CellType.Wall)
+            {
+                return false;
+            }
+
+            if (_tokens.Exists(x => x.Pos == pos))
+            {
+                return false; // token at position
+            }
+
+            return true;
+        }
+
     }
 }
