@@ -387,7 +387,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Anti Square
+  m_text: antisquare
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8b3296cd7d5829248b030a083d8a1d64, type: 2}
   m_sharedMaterial: {fileID: -2810301640913358202, guid: 8b3296cd7d5829248b030a083d8a1d64,

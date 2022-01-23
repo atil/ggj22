@@ -94,10 +94,8 @@ namespace Game
         [SerializeField] private string[] _successTexts;
 
         [Header("UI")]
-        [SerializeField] private GameObject _restartButton;
-        [SerializeField] private GameObject _successIcon;
         [SerializeField] private GameObject _nextButton;
-        [SerializeField] private TextMeshProUGUI _inputCountText;
+        [SerializeField] private MoveCounter _moveCounter;
         [SerializeField] private TextMeshProUGUI _levelStartText;
         [SerializeField] private TextMeshProUGUI _levelFinishText;
         [SerializeField] private RectTransform _levelDotsRoot;
@@ -134,8 +132,7 @@ namespace Game
             _gridSize = _levels[levelIndex].width;
             _currentlevelInputLimit = int.Parse(_levels[levelIndex].name.Split('_')[1]);
 
-            _restartButton.SetActive(false);
-            _successIcon.SetActive(false);
+            _moveCounter.InitLevel();
             _nextButton.SetActive(false);
             _levelFinishText.gameObject.SetActive(false);
             _levelFinishText.GetComponent<TextMeshProUGUI>().text = _successTexts[levelIndex];
@@ -250,8 +247,7 @@ namespace Game
                 });
             Camera.main.transform.position = targetCameraPosition;
 
-            _inputCountText.gameObject.SetActive(true);
-            _inputCountText.text = _currentlevelInputLimit.ToString();
+            _moveCounter.SetCounter(_currentlevelInputLimit);
             
             _isLevelCompleted = false;
             _currentLevelInputCount = 0;
@@ -368,10 +364,8 @@ namespace Game
             _isLevelCompleted = allBlack || allWhite;
 
             _currentLevelInputCount++;
-            _inputCountText.text = (_currentlevelInputLimit - _currentLevelInputCount).ToString();
-            _inputCountText.gameObject.SetActive(!_isLevelCompleted && _currentlevelInputLimit > _currentLevelInputCount);
-            _successIcon.gameObject.SetActive(_isLevelCompleted);
-            _restartButton.SetActive(!_isLevelCompleted && _currentlevelInputLimit <= _currentLevelInputCount);
+
+            _moveCounter.OnTokenClicked(_currentlevelInputLimit, _currentLevelInputCount, _isLevelCompleted);
         }
 
         private Vector2Int GetWalkDir(Token token)
