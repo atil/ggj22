@@ -137,12 +137,15 @@ namespace Game
             _levelFinishText.gameObject.SetActive(false);
             _levelFinishText.GetComponent<TextMeshProUGUI>().text = _successTexts[levelIndex];
             _levelStartText.GetComponent<TextMeshProUGUI>().text = _levelNames[levelIndex];
+            Curve.Tween(AnimationCurve.Linear(0, 0, 1, 1), 1f,
+                t => _levelStartText.GetComponent<TextMeshProUGUI>().alpha = Mathf.Lerp(0, 1, t),
+                () => _levelStartText.GetComponent<TextMeshProUGUI>().alpha = 1);
 
             Color camBackground = Camera.main.backgroundColor;
             Curve.Tween(_cameraTransitionFxCurve, _transitionDuration * 2f,
                 t =>
                 {
-                    Camera.main.backgroundColor = Color.Lerp(camBackground, CellType.White.ToColor() * 0.7f, t);
+                    Camera.main.backgroundColor = Color.Lerp(camBackground, camBackground * 1.9f, t);
                 },
                 () =>
                 {
@@ -180,7 +183,7 @@ namespace Game
             }
             _tokenViews.Clear();
             _tokens.Clear();
-            
+
             Camera.main.transform.position = new Vector3(_gridSize / 2f - _cameraMovementOffset, _gridSize / 2f, -1);
             _cellsParent.position = Vector3.zero;
 
@@ -248,7 +251,7 @@ namespace Game
             Camera.main.transform.position = targetCameraPosition;
 
             _moveCounter.SetCounter(_currentlevelInputLimit);
-            
+
             _isLevelCompleted = false;
             _currentLevelInputCount = 0;
             _isLevelTransitionStarted = false;
@@ -260,7 +263,7 @@ namespace Game
             {
                 return;
             }
-            
+
             if (Input.GetMouseButtonDown(0) && !_isLevelCompleted)
             {
                 if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out RaycastHit hit))
@@ -290,12 +293,12 @@ namespace Game
                     Curve.Tween(AnimationCurve.EaseInOut(0, 0, 1, 1), 1,
                         t =>
                         {
-                            _levelFinishText.color = Color.Lerp(new Color(255,255,255,0), Color.white, t);
-                            nextButtonImage.color = Color.Lerp(new Color(255,255,255,0), Color.white, t);
+                            _levelFinishText.color = Color.Lerp(new Color(255, 255, 255, 0), Color.white, t);
+                            nextButtonImage.color = Color.Lerp(new Color(255, 255, 255, 0), Color.white, t);
                         },
                         () =>
                         {
-                            _levelFinishText.color = Color.white; 
+                            _levelFinishText.color = Color.white;
                             nextButtonImage.color = Color.white;
                         });
                 }
@@ -348,7 +351,7 @@ namespace Game
             }
 
             MoveTokenView(clickedToken, tokenTarget, cellsToInvert.Count);
-            
+
             // Check if level completed
             bool allWhite = true;
             bool allBlack = true;
