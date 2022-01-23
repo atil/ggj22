@@ -140,6 +140,16 @@ namespace Game
             _levelFinishText.GetComponent<TextMeshProUGUI>().text = _successTexts[levelIndex];
             _levelStartText.GetComponent<TextMeshProUGUI>().text = _levelNames[levelIndex];
 
+            Curve.Tween(AnimationCurve.EaseInOut(0, 0, 1, 1), 0.2f,
+                t =>
+                {
+                    _levelDotsRoot.GetComponent<CanvasGroup>().alpha = Mathf.Lerp(0, 1, t);
+                },
+                () =>
+                {
+                    _levelDotsRoot.GetComponent<CanvasGroup>().alpha = 1;
+                });
+
             // Move out the old level
             yield return Curve.TweenCoroutine(AnimationCurve.EaseInOut(0, 0, 1, 1), _transitionDuration,
                 t =>
@@ -201,6 +211,19 @@ namespace Game
                 dot.localScale = Vector3.one * 0.1f;
             }
             _levelDotsRoot.GetChild(levelIndex).localScale = Vector3.one * 0.2f;
+
+            CoroutineStarter.RunDelayed(0.5f, () =>
+            {
+                Curve.Tween(AnimationCurve.EaseInOut(0, 0, 1, 1), 0.4f,
+                    t =>
+                    {
+                        _levelDotsRoot.GetComponent<CanvasGroup>().alpha = Mathf.Lerp(1, 0, t);
+                    },
+                    () =>
+                    {
+                        _levelDotsRoot.GetComponent<CanvasGroup>().alpha = 0;
+                    });
+            });
 
             //
             // Bring the new level to the middle
