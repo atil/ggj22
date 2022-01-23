@@ -39,7 +39,7 @@ namespace JamKit
                 return;
             }
 
-            const string projectName = "lorem ipsum"; // Set this when you open a project in itch
+            const string projectName = "antisquare"; // Set this when you open a project in itch
 
             BuildWebGL();
 

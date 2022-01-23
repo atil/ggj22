@@ -224,6 +224,7 @@ namespace Game
             {
                 return;
             }
+            Sfx.Instance.Play("ClickToken");
             clickedToken.Facing = dir;
 
             Vector2Int tokenTarget = clickedToken.Pos + dir;
@@ -303,6 +304,7 @@ namespace Game
 
             CoroutineStarter.RunDelayed(_movementStartDelay + index * _movementDurationPerCell, () =>
             {
+                Sfx.Instance.Play("InvertCell");
                 Curve.Tween(AnimationCurve.EaseInOut(0, 0, 1, 1), _movementDurationPerCell,
                     t => { sr.color = Color.Lerp(fromColor, toColor, t); },
                     () => { sr.color = toColor; });
@@ -381,6 +383,7 @@ namespace Game
 
         public void OnRestartClicked()
         {
+            Sfx.Instance.Play("ClickButton");
             SceneManager.LoadScene("Game");
         }
     }
