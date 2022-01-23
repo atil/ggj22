@@ -1745,27 +1745,27 @@ MonoBehaviour:
   - {fileID: 2800000, guid: bd1dc300aa1c38046be8c7159102ad32, type: 3}
   - {fileID: 2800000, guid: 1c7b426cc5509d24cb8f2c50405167c9, type: 3}
   _levelNames:
-  - level1
-  - level2
-  - level3
-  - level4
-  - level5
-  - level6
-  - level7
-  - level8
-  - level9
-  - level10
+  - every journey starts with a road...
+  - whenever hit a wall, don't give up...
+  - sometimes it will look so alike...
+  - I was so naive to believe it...
+  - here is a crossroad...
+  - there was a wall that helped us...
+  - but when the time comes...
+  - I learnt that, I am not alone...
+  - even when our roads are different...
+  - and here it is...
   _successTexts:
-  - nice1
-  - nice2
-  - nice3
-  - nice4
-  - nice5
-  - nice6
-  - nice7
-  - nice8
-  - nice9
-  - nice10
+  - ...I was there, with my baby steps
+  - ...look over your right, and move on
+  - ...I stept into the same river, twice
+  - ...there is a darkness inside of us all
+  - ...there I covered my partner's mistakes
+  - ...so we worked apart sometimes
+  - ...we learnt the become wall for each other
+  - ...we fight together against the dark
+  - ...we didn't stop each other
+  - ...i don't know what will happen next
   _restartButton: {fileID: 54421406}
   _successIcon: {fileID: 1100261114}
   _nextButton: {fileID: 816906513}
