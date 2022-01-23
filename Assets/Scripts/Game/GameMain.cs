@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 namespace Game
 {
@@ -90,7 +91,10 @@ namespace Game
 
         [SerializeField] private GameObject _restartButton;
         [SerializeField] private GameObject _successIcon;
+        [SerializeField] private GameObject _nextButton;
         [SerializeField] private TextMeshProUGUI _inputCountText;
+        [SerializeField] private TextMeshProUGUI _levelStartText;
+        [SerializeField] private TextMeshProUGUI _levelFinishText;
 
         private int _gridSize;
         private Cell[][] _cells;
@@ -118,8 +122,6 @@ namespace Game
 
         private IEnumerator LoadLevel(int levelIndex)
         {
-            _isLevelTransitionStarted = true;
-
             Debug.Assert(_levels[levelIndex].width == _levels[levelIndex].height, "Level texture should be square");
             _gridSize = _levels[levelIndex].width;
             _currentlevelInputLimit = Int32.Parse(_levels[levelIndex].name.Split('_')[1]);
@@ -191,6 +193,8 @@ namespace Game
             _inputCountText.text = _currentlevelInputLimit.ToString();
             _restartButton.SetActive(false);
             _successIcon.SetActive(false);
+            _nextButton.SetActive(false);
+            _levelFinishText.gameObject.SetActive(false);
             
             _isLevelCompleted = false;
             _currentLevelInputCount = 0;
@@ -226,7 +230,21 @@ namespace Game
                 }
                 else
                 {
-                    CoroutineStarter.Run(LoadLevel(_currentLevel));
+                    _isLevelTransitionStarted = true;
+                    var nextButtonImage = _nextButton.GetComponent<Image>();
+                    _levelFinishText.gameObject.SetActive(true);
+                    _nextButton.SetActive(true);
+                    Curve.Tween(AnimationCurve.EaseInOut(0, 0, 1, 1), 1,
+                        t =>
+                        {
+                            _levelFinishText.color = Color.Lerp(new Color(255,255,255,0), Color.white, t);
+                            nextButtonImage.color = Color.Lerp(new Color(255,255,255,0), Color.white, t);
+                        },
+                        () =>
+                        {
+                            _levelFinishText.color = Color.white; 
+                            nextButtonImage.color = Color.white;
+                        });
                 }
             }
         }
@@ -402,6 +420,12 @@ namespace Game
         }
 
         public void OnRestartClicked()
+        {
+            Sfx.Instance.Play("ClickButton");
+            CoroutineStarter.Run(LoadLevel(_currentLevel));
+        }
+
+        public void OnNextButtonClicked()
         {
             Sfx.Instance.Play("ClickButton");
             CoroutineStarter.Run(LoadLevel(_currentLevel));
