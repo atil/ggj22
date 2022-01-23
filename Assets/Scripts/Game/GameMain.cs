@@ -85,7 +85,7 @@ namespace Game
         [SerializeField] private GameObject _cellPrefab;
         [SerializeField] private Transform _cellsParent;
         [SerializeField] private GameObject _tokenPrefab;
-        [SerializeField] private Texture2D _testLevel;
+        [SerializeField] private Texture2D[] _levels;
 
         private int _gridSize;
         private Cell[][] _cells;
@@ -98,12 +98,44 @@ namespace Game
         private float _movementDurationPerCell = 0.25f;
         private float _movementStartDelay = 0.3f;
 
+        private int _currentLevel = 0;
+        private bool _isLevelCompleted = false;
+        private bool _isLevelTransitionStarted = false;
+
+        private int _cameraMovementOffset = 10;
+
         private void Start()
         {
-            Debug.Assert(_testLevel.width == _testLevel.height, "Level texture should be square");
-            _gridSize = _testLevel.width;
+            CoroutineStarter.Run(LoadLevel(_currentLevel));
+        }
 
-            Camera.main.transform.position = new Vector3(_gridSize / 2f, _gridSize / 2f, -1);
+        private IEnumerator LoadLevel(int levelIndex)
+        {
+            _isLevelTransitionStarted = true;
+
+            Debug.Assert(_levels[levelIndex].width == _levels[levelIndex].height, "Level texture should be square");
+            _gridSize = _levels[levelIndex].width;
+
+            yield return Curve.TweenCoroutine(AnimationCurve.EaseInOut(0, 0, 1, 1), _movementDurationPerCell,
+                t =>
+                {
+                    _cellsParent.position = Vector3.Lerp(Vector3.zero, new Vector3(-_cameraMovementOffset, 0, 0), t);
+                });
+            
+            foreach (var cellPair in _cellViews)
+            {
+                Destroy(cellPair.Value);
+            }
+            _cellViews.Clear();
+            foreach (var tokenPair in _tokenViews)
+            {
+                Destroy(tokenPair.Value);
+            }
+            _tokenViews.Clear();
+            _tokens.Clear();
+            
+            Camera.main.transform.position = new Vector3(_gridSize / 2f - _cameraMovementOffset, _gridSize / 2f, -1);
+            _cellsParent.position = Vector3.zero;
 
             _cells = new Cell[_gridSize][];
             for (int i = 0; i < _gridSize; i++)
@@ -113,12 +145,14 @@ namespace Game
                 {
                     Vector2Int pos = new Vector2Int(i, j);
 
-                    Color texPixel = _testLevel.GetPixel(i, j);
+                    Color texPixel = _levels[levelIndex].GetPixel(i, j);
                     if (texPixel == Color.green)
                     {
                         Token tempToken = new Token() { Pos = pos, Facing = Vector2Int.up };
                         _tokens.Add(tempToken);
-                        _tokenViews.Add(tempToken, Instantiate(_tokenPrefab, pos.WorldPos(), Quaternion.identity));
+                        GameObject tokenGo = Instantiate(_tokenPrefab, pos.WorldPos(), Quaternion.identity);
+                        tokenGo.transform.SetParent(_cellsParent);
+                        _tokenViews.Add(tempToken, tokenGo);
                     }
 
                     CellType type = texPixel.ToCellType();
@@ -133,11 +167,30 @@ namespace Game
                     _cellViews.Add(cell, go);
                 }
             }
+            
+            var targetCameraPosition = new Vector3(_gridSize / 2f, _gridSize / 2f, -1);
+            var currentCameraPosition = new Vector3(_gridSize / 2f - _cameraMovementOffset, _gridSize / 2f, -1);
+            
+            Camera.main.transform.position = currentCameraPosition;
+            yield return Curve.TweenCoroutine(AnimationCurve.EaseInOut(0, 0, 1, 1), _movementDurationPerCell,
+                t =>
+                {
+                    Camera.main.transform.position = Vector3.Lerp(currentCameraPosition, targetCameraPosition, t);
+                });
+            Camera.main.transform.position = targetCameraPosition;
+
+            _isLevelCompleted = false;
+            _isLevelTransitionStarted = false;
         }
 
         private void Update()
         {
-            if (Input.GetMouseButtonDown(0) && !_isTokenMoving)
+            if (_isTokenMoving || _isLevelTransitionStarted)
+            {
+                return;
+            }
+            
+            if (Input.GetMouseButtonDown(0) && !_isLevelCompleted)
             {
                 if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out RaycastHit hit))
                 {
@@ -148,6 +201,18 @@ namespace Game
                             OnTokenClicked(pair.Key);
                         }
                     }
+                }
+            }
+            else if (_isLevelCompleted)
+            {
+                _currentLevel++;
+                if (_currentLevel >= _levels.Length)
+                {
+                    SceneManager.LoadScene("End");
+                }
+                else
+                {
+                    CoroutineStarter.Run(LoadLevel(_currentLevel));
                 }
             }
         }
@@ -197,6 +262,20 @@ namespace Game
             }
 
             MoveTokenView(clickedToken, tokenTarget, cellsToInvert.Count);
+            
+            // Check if level completed
+            bool allWhite = true;
+            bool allBlack = true;
+            foreach (var row in _cells)
+            {
+                foreach (var cell in row)
+                {
+                    allWhite &= (cell.Type == CellType.White || cell.Type == CellType.Wall);
+                    allBlack &= (cell.Type == CellType.Black || cell.Type == CellType.Wall);
+                }
+            }
+
+            _isLevelCompleted = allBlack || allWhite;
         }
 
         private Vector2Int GetWalkDir(Token token)
