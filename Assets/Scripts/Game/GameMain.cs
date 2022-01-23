@@ -100,6 +100,7 @@ namespace Game
         [SerializeField] private TextMeshProUGUI _inputCountText;
         [SerializeField] private TextMeshProUGUI _levelStartText;
         [SerializeField] private TextMeshProUGUI _levelFinishText;
+        [SerializeField] private RectTransform _levelDotsRoot;
 
         private int _gridSize;
         private Cell[][] _cells;
@@ -194,6 +195,12 @@ namespace Game
                     _cellViews.Add(cell, go);
                 }
             }
+
+            foreach (RectTransform dot in _levelDotsRoot)
+            {
+                dot.localScale = Vector3.one * 0.1f;
+            }
+            _levelDotsRoot.GetChild(levelIndex).localScale = Vector3.one * 0.2f;
 
             //
             // Bring the new level to the middle
