@@ -101,6 +101,7 @@ namespace Game
         [SerializeField] private TextMeshProUGUI _levelStartText;
         [SerializeField] private TextMeshProUGUI _levelFinishText;
         [SerializeField] private RectTransform _levelDotsRoot;
+        [SerializeField] private AnimationCurve _cameraTransitionFxCurve;
 
         private int _gridSize;
         private Cell[][] _cells;
@@ -139,6 +140,17 @@ namespace Game
             _levelFinishText.gameObject.SetActive(false);
             _levelFinishText.GetComponent<TextMeshProUGUI>().text = _successTexts[levelIndex];
             _levelStartText.GetComponent<TextMeshProUGUI>().text = _levelNames[levelIndex];
+
+            Color camBackground = Camera.main.backgroundColor;
+            Curve.Tween(_cameraTransitionFxCurve, _transitionDuration * 2f,
+                t =>
+                {
+                    Camera.main.backgroundColor = Color.Lerp(camBackground, CellType.White.ToColor() * 0.7f, t);
+                },
+                () =>
+                {
+                    Camera.main.backgroundColor = camBackground;
+                });
 
             Curve.Tween(AnimationCurve.EaseInOut(0, 0, 1, 1), 0.2f,
                 t =>

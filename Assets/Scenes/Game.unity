@@ -1773,6 +1773,39 @@ MonoBehaviour:
   _levelStartText: {fileID: 1771464017}
   _levelFinishText: {fileID: 760726058}
   _levelDotsRoot: {fileID: 1854411252}
+  _cameraTransitionFxCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0.0063025355
+      inSlope: -0.00000013370585
+      outSlope: -0.00000013370585
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.21631207
+    - serializedVersion: 3
+      time: 0.49911505
+      value: 1
+      inSlope: 0.0056145787
+      outSlope: 0.0056145787
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0.008403361
+      inSlope: -0.04479151
+      outSlope: -0.04479151
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.18727916
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!4 &1849588138
 Transform:
   m_ObjectHideFlags: 0
