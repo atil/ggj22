@@ -2,7 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -88,6 +88,10 @@ namespace Game
         [SerializeField] private GameObject _tokenPrefab;
         [SerializeField] private Texture2D[] _levels;
 
+        [SerializeField] private GameObject _restartButton;
+        [SerializeField] private GameObject _successIcon;
+        [SerializeField] private TextMeshProUGUI _inputCountText;
+
         private int _gridSize;
         private Cell[][] _cells;
         private readonly Dictionary<Cell, GameObject> _cellViews = new Dictionary<Cell, GameObject>();
@@ -100,6 +104,8 @@ namespace Game
         private float _movementStartDelay = 0.3f;
 
         private int _currentLevel = 0;
+        private int _currentLevelInputCount = 0;
+        private int _currentlevelInputLimit = 0;
         private bool _isLevelCompleted = false;
         private bool _isLevelTransitionStarted = false;
 
@@ -116,6 +122,7 @@ namespace Game
 
             Debug.Assert(_levels[levelIndex].width == _levels[levelIndex].height, "Level texture should be square");
             _gridSize = _levels[levelIndex].width;
+            _currentlevelInputLimit = Int32.Parse(_levels[levelIndex].name.Split('_')[1]);
 
             yield return Curve.TweenCoroutine(AnimationCurve.EaseInOut(0, 0, 1, 1), _movementDurationPerCell,
                 t =>
@@ -180,7 +187,13 @@ namespace Game
                 });
             Camera.main.transform.position = targetCameraPosition;
 
+            _inputCountText.gameObject.SetActive(true);
+            _inputCountText.text = _currentlevelInputLimit.ToString();
+            _restartButton.SetActive(false);
+            _successIcon.SetActive(false);
+            
             _isLevelCompleted = false;
+            _currentLevelInputCount = 0;
             _isLevelTransitionStarted = false;
         }
 
@@ -278,6 +291,12 @@ namespace Game
             }
 
             _isLevelCompleted = allBlack || allWhite;
+
+            _currentLevelInputCount++;
+            _inputCountText.text = (_currentlevelInputLimit - _currentLevelInputCount).ToString();
+            _inputCountText.gameObject.SetActive(!_isLevelCompleted && _currentlevelInputLimit > _currentLevelInputCount);
+            _successIcon.gameObject.SetActive(_isLevelCompleted);
+            _restartButton.SetActive(!_isLevelCompleted && _currentlevelInputLimit <= _currentLevelInputCount);
         }
 
         private Vector2Int GetWalkDir(Token token)
