@@ -87,8 +87,13 @@ namespace Game
         [SerializeField] private GameObject _cellPrefab;
         [SerializeField] private Transform _cellsParent;
         [SerializeField] private GameObject _tokenPrefab;
-        [SerializeField] private Texture2D[] _levels;
 
+        [Header("Levels")]
+        [SerializeField] private Texture2D[] _levels;
+        [SerializeField] private string[] _levelNames;
+        [SerializeField] private string[] _successTexts;
+
+        [Header("UI")]
         [SerializeField] private GameObject _restartButton;
         [SerializeField] private GameObject _successIcon;
         [SerializeField] private GameObject _nextButton;
@@ -104,8 +109,9 @@ namespace Game
         private readonly Dictionary<Token, GameObject> _tokenViews = new Dictionary<Token, GameObject>();
 
         private bool _isTokenMoving = false;
-        private float _movementDurationPerCell = 0.25f;
-        private float _movementStartDelay = 0.3f;
+        private readonly float _movementDurationPerCell = 0.25f;
+        private readonly float _movementStartDelay = 0.3f;
+        private readonly float _transitionDuration = 0.7f;
 
         private int _currentLevel = 0;
         private int _currentLevelInputCount = 0;
@@ -124,14 +130,25 @@ namespace Game
         {
             Debug.Assert(_levels[levelIndex].width == _levels[levelIndex].height, "Level texture should be square");
             _gridSize = _levels[levelIndex].width;
-            _currentlevelInputLimit = Int32.Parse(_levels[levelIndex].name.Split('_')[1]);
+            _currentlevelInputLimit = int.Parse(_levels[levelIndex].name.Split('_')[1]);
 
-            yield return Curve.TweenCoroutine(AnimationCurve.EaseInOut(0, 0, 1, 1), _movementDurationPerCell,
+            _restartButton.SetActive(false);
+            _successIcon.SetActive(false);
+            _nextButton.SetActive(false);
+            _levelFinishText.gameObject.SetActive(false);
+            _levelFinishText.GetComponent<TextMeshProUGUI>().text = _successTexts[levelIndex];
+            _levelStartText.GetComponent<TextMeshProUGUI>().text = _levelNames[levelIndex];
+
+            // Move out the old level
+            yield return Curve.TweenCoroutine(AnimationCurve.EaseInOut(0, 0, 1, 1), _transitionDuration,
                 t =>
                 {
                     _cellsParent.position = Vector3.Lerp(Vector3.zero, new Vector3(-_cameraMovementOffset, 0, 0), t);
                 });
-            
+
+            //
+            // Reset data, load data and instantiate view
+            //
             foreach (var cellPair in _cellViews)
             {
                 Destroy(cellPair.Value);
@@ -177,12 +194,14 @@ namespace Game
                     _cellViews.Add(cell, go);
                 }
             }
-            
+
+            //
+            // Bring the new level to the middle
+            //
             var targetCameraPosition = new Vector3(_gridSize / 2f, _gridSize / 2f, -1);
             var currentCameraPosition = new Vector3(_gridSize / 2f - _cameraMovementOffset, _gridSize / 2f, -1);
-            
             Camera.main.transform.position = currentCameraPosition;
-            yield return Curve.TweenCoroutine(AnimationCurve.EaseInOut(0, 0, 1, 1), _movementDurationPerCell,
+            yield return Curve.TweenCoroutine(AnimationCurve.EaseInOut(0, 0, 1, 1), _transitionDuration,
                 t =>
                 {
                     Camera.main.transform.position = Vector3.Lerp(currentCameraPosition, targetCameraPosition, t);
@@ -191,10 +210,6 @@ namespace Game
 
             _inputCountText.gameObject.SetActive(true);
             _inputCountText.text = _currentlevelInputLimit.ToString();
-            _restartButton.SetActive(false);
-            _successIcon.SetActive(false);
-            _nextButton.SetActive(false);
-            _levelFinishText.gameObject.SetActive(false);
             
             _isLevelCompleted = false;
             _currentLevelInputCount = 0;

@@ -1028,7 +1028,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Lorem ipsum dolor sit amet
+  m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8b3296cd7d5829248b030a083d8a1d64, type: 2}
   m_sharedMaterial: {fileID: -2810301640913358202, guid: 8b3296cd7d5829248b030a083d8a1d64,
@@ -1151,6 +1151,28 @@ MonoBehaviour:
   - {fileID: 2800000, guid: d5a71cedba96be44e81ba93cf06f1959, type: 3}
   - {fileID: 2800000, guid: bd1dc300aa1c38046be8c7159102ad32, type: 3}
   - {fileID: 2800000, guid: 1c7b426cc5509d24cb8f2c50405167c9, type: 3}
+  _levelNames:
+  - level1
+  - level2
+  - level3
+  - level4
+  - level5
+  - level6
+  - level7
+  - level8
+  - level9
+  - level10
+  _successTexts:
+  - nice1
+  - nice2
+  - nice3
+  - nice4
+  - nice5
+  - nice6
+  - nice7
+  - nice8
+  - nice9
+  - nice10
   _restartButton: {fileID: 54421406}
   _successIcon: {fileID: 1100261114}
   _nextButton: {fileID: 816906513}

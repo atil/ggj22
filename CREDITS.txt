@@ -1,3 +1,9 @@
+Various assets by Kenney
+https://www.kenney.nl/assets
+
+Font "Quicksand" by Andrew Paglinawan
+https://fonts.google.com/specimen/Quicksand
+
 "Comfortable Mystery" Kevin MacLeod (incompetech.com)
 Licensed under Creative Commons: By Attribution 4.0 License
 http://creativecommons.org/licenses/by/4.0/
