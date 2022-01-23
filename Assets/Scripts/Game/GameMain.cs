@@ -384,7 +384,7 @@ namespace Game
         public void OnRestartClicked()
         {
             Sfx.Instance.Play("ClickButton");
-            SceneManager.LoadScene("Game");
+            CoroutineStarter.Run(LoadLevel(_currentLevel));
         }
     }
 }
