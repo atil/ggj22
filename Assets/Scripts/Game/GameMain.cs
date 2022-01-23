@@ -23,7 +23,8 @@ namespace Game
                     ColorUtility.TryParseHtmlString("#f8f9fa", out Color c);
                     return c;
                 case CellType.Black:
-                    ColorUtility.TryParseHtmlString("#212529", out c);
+                    //ColorUtility.TryParseHtmlString("#212529", out c);
+                    ColorUtility.TryParseHtmlString("#121212", out c);
                     return c;
                 case CellType.Wall:
                     ColorUtility.TryParseHtmlString("#495057", out c);
@@ -384,7 +385,7 @@ namespace Game
         public void OnRestartClicked()
         {
             Sfx.Instance.Play("ClickButton");
-            CoroutineStarter.Run(LoadLevel(_currentLevel));
+            SceneManager.LoadScene("Game");
         }
     }
 }
