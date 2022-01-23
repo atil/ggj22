@@ -13,8 +13,5 @@ MonoBehaviour:
   m_Name: SfxDatabase
   m_EditorClassIdentifier: 
   _clips:
-  - {fileID: 8300000, guid: 0b11ec6f83d72134089d902516038e4a, type: 3}
-  - {fileID: 8300000, guid: dd9eca7fb7adae042b062ec9b8b5118a, type: 3}
-  - {fileID: 8300000, guid: 202666c5e880ca143b58fe30a25153a1, type: 3}
-  - {fileID: 8300000, guid: 0f6254b17b1958b4780a8120eee472c3, type: 3}
-  - {fileID: 8300000, guid: 4db06683d371148439359f66c51bce8e, type: 3}
+  - {fileID: 8300000, guid: 007505533429f3244ae07772e4c1ffa5, type: 3}
+  - {fileID: 8300000, guid: b0ef356e15a6c3b4ab44b12f38083fe0, type: 3}
